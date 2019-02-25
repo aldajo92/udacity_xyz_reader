@@ -8,4 +8,14 @@
     <dimen name="fab_press_translation_z">6dp</dimen>
     <dimen name="fab_margin">24dp</dimen>
 
+    <!-- App bar -->
+    <dimen name="appbar_elevation">4dp</dimen>
+    <dimen name="appbar_height">168dp</dimen>
+
+    <!-- List -->
+    <dimen name="list_image_side_margin">48dp</dimen>
+    <dimen name="list_image_bottom_margin">16dp</dimen>
+
+    <dimen name="size_reading_image">110dp</dimen>
+
 </resources>

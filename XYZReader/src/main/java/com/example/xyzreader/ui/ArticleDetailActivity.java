@@ -1,30 +1,49 @@
 package com.example.xyzreader.ui;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.LoaderManager;
-import android.content.Loader;
+import android.annotation.TargetApi;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.app.SharedElementCallback;
+import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.widget.ImageView;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
+import com.example.xyzreader.pagetransformer.CubeOutPageTransformer;
+import com.example.xyzreader.pagetransformer.DepthPageTransformer;
+import com.example.xyzreader.pagetransformer.PopPageTransformer;
+import com.example.xyzreader.pagetransformer.ZoomOutPageTransformer;
 
-/**
- * An activity representing a single Article detail screen, letting you swipe between articles.
- */
-public class ArticleDetailActivity extends ActionBarActivity
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+import java.util.List;
+import java.util.Map;
+
+import static com.example.xyzreader.Constants.ANIM_DURATION;
+import static com.example.xyzreader.Constants.CUBE;
+import static com.example.xyzreader.Constants.DEPTH;
+import static com.example.xyzreader.Constants.EXTRA_PAGE_TRANSFORMATION;
+import static com.example.xyzreader.Constants.EXTRA_STARTING_POSITION;
+import static com.example.xyzreader.Constants.POP;
+import static com.example.xyzreader.Constants.STATE_CURRENT_PAGE_POSITION;
+import static com.example.xyzreader.Constants.ZOOM;
+
+public class ArticleDetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private Cursor mCursor;
     private long mStartId;
@@ -38,32 +57,70 @@ public class ArticleDetailActivity extends ActionBarActivity
     private View mUpButtonContainer;
     private View mUpButton;
 
+    private int currentPosition;
+    private int startingPosition;
+    private boolean isReturning;
+    private ArticleDetailFragment currentDetailFragment;
+    private ViewPager.PageTransformer pageTransformer;
+    private String pageTransformerStr;
+
+    private final SharedElementCallback sharedElementCallback = new SharedElementCallback() {
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+            if (isReturning) {
+                ImageView sharedElement = currentDetailFragment.getPhotoView();
+                if (sharedElement == null) {
+                    names.clear();
+                    sharedElements.clear();
+                } else if (startingPosition != currentPosition) {
+                    names.clear();
+                    names.add(sharedElement.getTransitionName());
+                    sharedElements.clear();
+                    sharedElements.put(sharedElement.getTransitionName(), sharedElement);
+                }
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+
+            ActivityCompat.postponeEnterTransition(this);
+            setEnterSharedElementCallback(sharedElementCallback);
         }
         setContentView(R.layout.activity_article_detail);
 
-        getLoaderManager().initLoader(0, null, this);
+        startingPosition = getIntent().getIntExtra(EXTRA_STARTING_POSITION, 0);
+        if (savedInstanceState == null) {
+            currentPosition = startingPosition;
+        } else {
+            currentPosition = savedInstanceState.getInt(STATE_CURRENT_PAGE_POSITION);
+        }
 
-        mPagerAdapter = new MyPagerAdapter(getFragmentManager());
-        mPager = (ViewPager) findViewById(R.id.pager);
+        pageTransformerStr = getIntent().getStringExtra(EXTRA_PAGE_TRANSFORMATION);
+
+//        getSupportLoaderManager().initLoader(XYZ_LOADER_ID, null, this);
+
+        mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
+        mPager = findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
         mPager.setPageMargin((int) TypedValue
                 .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
         mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
 
-        mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+
+        mPager.setCurrentItem(currentPosition);
+        mPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageScrollStateChanged(int state) {
                 super.onPageScrollStateChanged(state);
                 mUpButton.animate()
                         .alpha((state == ViewPager.SCROLL_STATE_IDLE) ? 1f : 0f)
-                        .setDuration(300);
+                        .setDuration(ANIM_DURATION);
             }
 
             @Override
@@ -73,6 +130,8 @@ public class ArticleDetailActivity extends ActionBarActivity
                 }
                 mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
                 updateUpButtonPosition();
+
+                currentPosition = position;
             }
         });
 
@@ -82,7 +141,11 @@ public class ArticleDetailActivity extends ActionBarActivity
         mUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onSupportNavigateUp();
+                // Reverses the Activity Scene entry Transition and triggers the calling Activity
+                // to reverse its exit Transition.
+                // References: @see "https://stackoverflow.com/questions/37713793/shared-element-transition-when-using-actionbar-back-button"
+                // @see "https://discussions.udacity.com/t/transition-work-when-exiting-but-not-entering/207227/4"
+                supportFinishAfterTransition();
             }
         });
 
@@ -107,34 +170,47 @@ public class ArticleDetailActivity extends ActionBarActivity
         }
     }
 
+    @NonNull
     @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+    public Loader<Cursor> onCreateLoader(int i, @Nullable Bundle bundle) {
         return ArticleLoader.newAllArticlesInstance(this);
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+    public void onLoadFinished(@NonNull Loader<Cursor> cursorLoader, Cursor cursor) {
         mCursor = cursor;
         mPagerAdapter.notifyDataSetChanged();
 
-        // Select the start ID
-        if (mStartId > 0) {
-            mCursor.moveToFirst();
-            // TODO: optimize
-            while (!mCursor.isAfterLast()) {
-                if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
-                    final int position = mCursor.getPosition();
-                    mPager.setCurrentItem(position, false);
+        mPager.setCurrentItem(currentPosition, false);
+        mCursor.moveToPosition(currentPosition);
+
+        mPager.setPageTransformer(true, getPageTransformer());
+    }
+
+    public ViewPager.PageTransformer getPageTransformer() {
+        if (!TextUtils.isEmpty(pageTransformerStr)) {
+            switch (pageTransformerStr) {
+                case POP:
+                    pageTransformer = new PopPageTransformer();
                     break;
-                }
-                mCursor.moveToNext();
+                case ZOOM:
+                    pageTransformer = new ZoomOutPageTransformer();
+                    break;
+                case DEPTH:
+                    pageTransformer = new DepthPageTransformer();
+                    break;
+                case CUBE:
+                    pageTransformer = new CubeOutPageTransformer();
+                    break;
+                default:
+                    pageTransformer = new PopPageTransformer();
             }
-            mStartId = 0;
         }
+        return pageTransformer;
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> cursorLoader) {
         mCursor = null;
         mPagerAdapter.notifyDataSetChanged();
     }
@@ -151,13 +227,14 @@ public class ArticleDetailActivity extends ActionBarActivity
         mUpButton.setTranslationY(Math.min(mSelectedItemUpButtonFloor - upButtonNormalBottom, 0));
     }
 
-    private class MyPagerAdapter extends FragmentStatePagerAdapter {
+    private class MyPagerAdapter extends FragmentPagerAdapter {
+
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
         @Override
-        public void setPrimaryItem(ViewGroup container, int position, Object object) {
+        public void setPrimaryItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             super.setPrimaryItem(container, position, object);
             ArticleDetailFragment fragment = (ArticleDetailFragment) object;
             if (fragment != null) {

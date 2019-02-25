@@ -22,4 +22,25 @@
     <color name="theme_primary_dark">#04561A</color>
     <color name="theme_accent">#04561A</color>
     <color name="ltgray">#ffe0e0e0</color>
+
+    <!--Color Primary-->
+    <color name="colorPrimary">#7AA7FF</color>
+    <color name="colorPrimaryDark">#4278cb</color>
+    <color name="colorAccent">#ffab40</color>
+
+    <color name="color_title_text">#303f9f</color>
+    <color name="color_subtitle_text">#26a69a</color>
+
+    <!-- Text color for the article body -->
+    <color name="color_body_text">#1b0000</color>
+
+    <!-- Background color for meta_bar -->
+    <color name="color_meta_bar">#006F7A</color>
+
+    <!-- Background color for Settings activity -->
+    <color name="color_pref_background">#e3f2fd</color>
+
+    <color name="color_swipe_deep_purple">#7C4DFF</color>
+    <color name="color_swipe_red">#FF584B</color>
+
 </resources>

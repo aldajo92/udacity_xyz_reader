@@ -9,4 +9,24 @@
 
     <string name="up">Up</string>
 
+    <string name="reading_content_description">Reading image</string>
+
+    <!-- Transition Names -->
+    <string name="transition_photo">transition_photo</string>
+
+    <!-- Value in SharedPreferences -->
+    <string name="pref_text_size_small" translatable="false">small</string>
+    <string name="pref_text_size_medium" translatable="false">medium</string>
+    <string name="pref_text_size_large" translatable="false">large</string>
+    <string name="pref_text_size_extra_large" translatable="false">extra_large</string>
+
+    <string name="pref_page_animation_pop" translatable="false">pop</string>
+    <string name="pref_page_animation_zoom" translatable="false">zoom</string>
+    <string name="pref_page_animation_depth" translatable="false">depth</string>
+    <string name="pref_page_animation_cube" translatable="false">cube</string>
+    <string name="pref_page_animation_default" translatable="false">pop</string>
+    <string name="pref_page_animation_key" translatable="false">page_animation</string>
+    <string name="pref_text_size_key" translatable="false">text_size</string>
+    <string name="pref_text_size_default" translatable="false">@string/pref_text_size_medium</string>
+
 </resources>
