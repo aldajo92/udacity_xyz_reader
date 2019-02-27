@@ -3,9 +3,10 @@ package com.example.xyzreader.data;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 
-public class ArticleLoader extends Loader<Cursor> {
+public class ArticleLoader extends CursorLoader {
     public static ArticleLoader newAllArticlesInstance(Context context) {
         return new ArticleLoader(context, ItemsContract.Items.buildDirUri());
     }
@@ -15,8 +16,7 @@ public class ArticleLoader extends Loader<Cursor> {
     }
 
     private ArticleLoader(Context context, Uri uri) {
-        super(context);
-//        super(context, uri, Query.PROJECTION, null, null, ItemsContract.Items.DEFAULT_SORT);
+        super(context, uri, Query.PROJECTION, null, null, ItemsContract.Items.DEFAULT_SORT);
     }
 
     public interface Query {

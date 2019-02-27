@@ -2,6 +2,7 @@ package com.example.xyzreader.ui.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -14,7 +15,7 @@ import android.view.ViewGroup;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.ui.ArticleListActivity;
-import com.example.xyzreader.ui.ImageLoaderHelper;
+import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -82,10 +83,18 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ViewHolder> {
                             + "<br/>" + " by "
                             + mCursor.getString(ArticleLoader.Query.AUTHOR)));
         }
-        holder.thumbnailView.setImageUrl(
-                mCursor.getString(ArticleLoader.Query.THUMB_URL),
-                ImageLoaderHelper.getInstance(context).getImageLoader());
+
+//        setTextSize(holder);
+
+        Picasso.get()
+                .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
+                .error(R.drawable.photo_error)
+                .into(holder.thumbnailView);
         holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            holder.thumbnailView.setTransitionName(context.getString(R.string.transition_photo) + position);
+        }
+        holder.thumbnailView.setTag(context.getString(R.string.transition_photo) + position);
     }
 
     @Override
