@@ -1,10 +1,8 @@
 package com.example.xyzreader.data;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.net.Uri;
 import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 
 public class ArticleLoader extends CursorLoader {
     public static ArticleLoader newAllArticlesInstance(Context context) {

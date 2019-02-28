@@ -29,4 +29,15 @@
     <dimen name="sp22">22sp</dimen>
     <dimen name="sp24">24sp</dimen>
 
+    <!-- CardView -->
+    <dimen name="card_elevation">1dp</dimen>
+    <dimen name="card_margin">4dp</dimen>
+
+    <!-- Margin used in list_item_article.xml -->
+    <dimen name="title_padding">16dp</dimen>
+    <dimen name="title_bottom_padding">4dp</dimen>
+    <dimen name="subtitle_padding">16dp</dimen>
+    <dimen name="font_small">12sp</dimen>
+    <dimen name="image_button_width">56dp</dimen>
+
 </resources>

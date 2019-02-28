@@ -29,4 +29,6 @@
     <string name="pref_text_size_key" translatable="false">text_size</string>
     <string name="pref_text_size_default" translatable="false">@string/pref_text_size_medium</string>
 
+    <string name="share_text_by">&#160;by&#160;</string>
+
 </resources>

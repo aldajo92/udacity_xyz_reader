@@ -1,17 +1,16 @@
-package com.example.xyzreader.ui;
+package com.example.xyzreader.ui.activities;
 
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.SharedElementCallback;
 import android.support.v4.content.Loader;
@@ -26,8 +25,11 @@ import android.view.animation.LayoutAnimationController;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.example.xyzreader.data.ItemsContract;
 import com.example.xyzreader.data.UpdaterService;
+import com.example.xyzreader.ui.adapter.ArticleClickListener;
 import com.example.xyzreader.ui.adapter.ArticlesAdapter;
+import com.example.xyzreader.ui.views.DynamicHeightNetworkImageView;
 
 import java.util.List;
 import java.util.Map;
@@ -40,13 +42,12 @@ public class ArticleListActivity
         extends
         AppCompatActivity
         implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>,
+        ArticleClickListener {
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
     private Toolbar toolbar;
-
-    private String textSizeStr;
 
     private Bundle reenterState;
 
@@ -103,8 +104,6 @@ public class ArticleListActivity
         if (savedInstanceState == null) {
             refresh();
         }
-
-        textSizeStr = getPreferredTextSizeStr();
     }
 
     private void refresh() {
@@ -112,23 +111,16 @@ public class ArticleListActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         registerReceiver(mRefreshingReceiver,
                 new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         unregisterReceiver(mRefreshingReceiver);
-    }
-
-    private String getPreferredTextSizeStr() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String keyForTextSize = getString(R.string.pref_text_size_key);
-        String defaultTextSize = getString(R.string.pref_text_size_default);
-        return prefs.getString(keyForTextSize, defaultTextSize);
     }
 
     private void setSwipeRefreshLayout() {
@@ -177,8 +169,8 @@ public class ArticleListActivity
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        ArticlesAdapter articlesAdapter = new ArticlesAdapter(this, cursor);
+    public void onLoadFinished(@NonNull Loader<Cursor> cursorLoader, Cursor cursor) {
+        ArticlesAdapter articlesAdapter = new ArticlesAdapter(cursor, this);
         articlesAdapter.setHasStableIds(true);
         recyclerView.setAdapter(articlesAdapter);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
@@ -190,5 +182,25 @@ public class ArticleListActivity
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         recyclerView.setAdapter(null);
+    }
+
+    @Override
+    public void onClick(int position, String transitionName, DynamicHeightNetworkImageView imageView, long itemId) {
+
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+                ItemsContract.Items.buildItemUri(itemId));
+
+        intent.putExtra(EXTRA_STARTING_POSITION, position);
+
+        if(transitionName != null){
+            Bundle bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    ArticleListActivity.this,
+                    imageView,
+                    transitionName
+            ).toBundle();
+            startActivity(intent, bundle);
+        } else {
+            startActivity(intent);
+        }
     }
 }

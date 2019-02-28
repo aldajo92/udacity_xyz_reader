@@ -65,7 +65,6 @@
             android:clipToPadding="false"
             android:layoutAnimation="@anim/layout_animation_from_bottom"
             android:paddingLeft="@dimen/list_side_margin"
-            android:paddingTop="116dp"
             android:paddingRight="@dimen/list_side_margin"
             android:paddingBottom="28dp"
             android:scrollbarStyle="outsideOverlay" />

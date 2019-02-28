@@ -1,4 +1,4 @@
-<com.example.xyzreader.ui.DrawInsetsFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.xyzreader.ui.layouts.DrawInsetsFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/draw_insets_frame_layout"
     android:layout_width="match_parent"
@@ -9,8 +9,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Use constraint layout to avoid margin which is caused by setting
-            ThreeTwoImageView -->
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -19,9 +17,10 @@
                 android:id="@+id/photo_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
                 android:background="@color/photo_placeholder">
-                <!--suppress AndroidLintContentDescription -->
-                <com.example.xyzreader.ui.ThreeTwoImageView
+
+                <com.example.xyzreader.ui.views.ThreeTwoImageView
                     android:id="@+id/photo"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
@@ -34,12 +33,13 @@
 
             </FrameLayout>
 
-            <com.example.xyzreader.ui.MaxWidthLinearLayout
+            <com.example.xyzreader.ui.layouts.MaxWidthLinearLayout
                 android:id="@+id/max_width_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:background="#fff"
+                android:elevation="@dimen/detail_max_width_elevation"
                 android:maxWidth="@dimen/detail_card_max_width"
                 android:orientation="vertical"
                 app:layout_constraintStart_toStartOf="parent"
@@ -87,7 +87,7 @@
                     android:paddingBottom="@dimen/detail_body_bottom_margin"
                     android:textColor="@color/color_body_text" />
 
-            </com.example.xyzreader.ui.MaxWidthLinearLayout>
+            </com.example.xyzreader.ui.layouts.MaxWidthLinearLayout>
         </android.support.constraint.ConstraintLayout>
     </com.example.xyzreader.ui.ObservableScrollView>
 
@@ -108,4 +108,4 @@
         app:layout_anchorGravity="bottom|right|end"
         app:pressedTranslationZ="@dimen/fab_press_translation_z" />
 
-</com.example.xyzreader.ui.DrawInsetsFrameLayout>
+</com.example.xyzreader.ui.layouts.DrawInsetsFrameLayout>

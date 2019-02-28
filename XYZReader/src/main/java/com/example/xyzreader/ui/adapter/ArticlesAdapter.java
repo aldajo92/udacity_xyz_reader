@@ -2,10 +2,10 @@ package com.example.xyzreader.ui.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,15 +14,16 @@ import android.view.ViewGroup;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
-import com.example.xyzreader.ui.ArticleListActivity;
-import com.squareup.picasso.Picasso;
+import com.example.xyzreader.models.ArticleModel;
+import com.example.xyzreader.ui.activities.ArticleListActivity;
+import com.example.xyzreader.ui.views.DynamicHeightNetworkImageView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-public class ArticlesAdapter extends RecyclerView.Adapter<ViewHolder> {
+public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesViewHolder> {
 
     private static final String TAG = ArticleListActivity.class.toString();
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
@@ -32,11 +33,11 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     private Cursor mCursor;
 
-    private Context context;
+    private ArticleClickListener listener;
 
-    public ArticlesAdapter(Context context, Cursor cursor) {
-        this.context = context;
+    public ArticlesAdapter(Cursor cursor, ArticleClickListener listener) {
         this.mCursor = cursor;
+        this.listener = listener;
     }
 
     @Override
@@ -47,9 +48,11 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ArticlesViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_article, parent, false);
-        return new ViewHolder(view);
+        ArticlesViewHolder articlesViewHolder = new ArticlesViewHolder(view);
+        articlesViewHolder.setArticleClickListener(listener);
+        return articlesViewHolder;
     }
 
     private Date parsePublishedDate() {
@@ -64,37 +67,28 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ArticlesViewHolder holder, int position) {
         mCursor.moveToPosition(position);
-        holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+        String title = mCursor.getString(ArticleLoader.Query.TITLE);
         Date publishedDate = parsePublishedDate();
-        if (!publishedDate.before(START_OF_EPOCH.getTime())) {
-
-            holder.subtitleView.setText(Html.fromHtml(
+        Spanned subtitle = (!publishedDate.before(START_OF_EPOCH.getTime())) ?
+            Html.fromHtml(
                     DateUtils.getRelativeTimeSpanString(
                             publishedDate.getTime(),
                             System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
                             DateUtils.FORMAT_ABBREV_ALL).toString()
                             + "<br/>" + " by "
-                            + mCursor.getString(ArticleLoader.Query.AUTHOR)));
-        } else {
-            holder.subtitleView.setText(Html.fromHtml(
+                            + mCursor.getString(ArticleLoader.Query.AUTHOR))
+        :
+            Html.fromHtml(
                     outputFormat.format(publishedDate)
                             + "<br/>" + " by "
-                            + mCursor.getString(ArticleLoader.Query.AUTHOR)));
-        }
+                            + mCursor.getString(ArticleLoader.Query.AUTHOR));
 
-//        setTextSize(holder);
+        String imageUrl = mCursor.getString(ArticleLoader.Query.THUMB_URL);
+        float aspectRatio = mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO);
 
-        Picasso.get()
-                .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
-                .error(R.drawable.photo_error)
-                .into(holder.thumbnailView);
-        holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            holder.thumbnailView.setTransitionName(context.getString(R.string.transition_photo) + position);
-        }
-        holder.thumbnailView.setTag(context.getString(R.string.transition_photo) + position);
+        holder.bind(new ArticleModel(title, subtitle, imageUrl, aspectRatio, getItemId(position)));
     }
 
     @Override
