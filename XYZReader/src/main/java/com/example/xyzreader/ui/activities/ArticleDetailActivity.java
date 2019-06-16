@@ -34,7 +34,6 @@ import java.util.Map;
 
 import static com.example.xyzreader.Constants.ANIM_DURATION;
 import static com.example.xyzreader.Constants.EXTRA_CURRENT_POSITION;
-import static com.example.xyzreader.Constants.EXTRA_PAGE_TRANSFORMATION;
 import static com.example.xyzreader.Constants.EXTRA_STARTING_POSITION;
 import static com.example.xyzreader.Constants.STATE_CURRENT_PAGE_POSITION;
 import static com.example.xyzreader.Constants.XYZ_LOADER_ID;

@@ -31,7 +31,7 @@ import android.widget.TextView;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
-import com.example.xyzreader.ui.ObservableScrollView;
+import com.example.xyzreader.ui.views.ObservableScrollView;
 import com.example.xyzreader.ui.activities.ArticleDetailActivity;
 import com.example.xyzreader.ui.layouts.DrawInsetsFrameLayout;
 import com.squareup.picasso.Picasso;
