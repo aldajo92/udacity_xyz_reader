@@ -1,6 +1,5 @@
 package com.example.xyzreader.ui.adapter;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -16,7 +15,6 @@ import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.models.ArticleModel;
 import com.example.xyzreader.ui.activities.ArticleListActivity;
-import com.example.xyzreader.ui.views.DynamicHeightNetworkImageView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
